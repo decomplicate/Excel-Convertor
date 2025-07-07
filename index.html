@@ -6,6 +6,8 @@
 <title>Bulk Excel to XLSX Converter</title>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlzjgQ915xS2Z6gK+1eG5Fz3h7/K8zG5/h5/r1B4+E9Fz0/J1zW+Pz0/K3d5M0/Y9t+1q6Z7/X0C/92zW+Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -41,10 +43,10 @@
   .icon-container {
     margin-bottom: 30px;
   }
-  .icon-container img {
-    width: 100px; /* Adjust size as needed */
-    height: auto;
-    filter: brightness(0) invert(1); /* Makes the icon white */
+  /* Updated for Font Awesome icon */
+  .icon-container .fa-file-excel {
+    font-size: 100px; /* Adjust size as needed */
+    color: white; /* Make the icon white */
   }
   .choose-files-wrapper {
     position: relative;
@@ -179,7 +181,7 @@
 
   <div class="converter-container">
     <div class="icon-container">
-      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PCEtLSAhRk9OVEFBU1dFU09NRTogZmEtdnUgY2FyZWZ1bGx5IGNyZWF0ZWQgYXJ0d29yaywgZmEtZmlsZS1leGNlbCBpY29uIC0tPjxwYXRoIGZpbGw9IndoaXRlIiBkPSJNMzY4IDMzNmgtNDhjLTguOCAwLTE2IDctMTYgMTZzNyAxNiAxNiAxNmg0OGMwIDcuMSAyLjMgMTQgNi40IDE5LjFsMjIuMyAyNy45YzkuNyAxMi4xIDI4LjkgMTIuMSAzOC42IDBMMzkgNzk2LjljLTM4LjgtNDguMy01MS4zLTEwNS0zMy41LTE1Nmw4NC41LTQzLjZjNDcuNy0yNC42IDgwLjYtNTcuNSA4MC42LTg0LjVWMjQ4YzAtMzUuMy0yOC43LTY0LTY0LTY0SDk2Yy0zNS4zIDAtNjQgMjguNy02NCA2NHYyNTZjMCAzNS4zIDI4LjcgNjQgNjQgNjRoMzA0YzM1LjMgMCA2NC0yOC43IDY0LTY0di0zMi41Yy01Mi41IDM4LjMtMTE3LjkgNDYuMy0xNzIuNyAxNCA0NS43LTI3LjIgOTEuNi03OC40IDkxLjYtMTM2LjV2LTMyLjZjMC01Ni0zNS43LTEwNC41Ljg5LS41QzM1NiAyMzkuNiAzNjggMjkyLjUgMzY4IDMzNnpNNDQ4IDIyNGMwLTY0LTY0LTk2LTk2LTk2aC02NGMtMzIuMSAwLTU3LjMgMjQuMi02My41IDU2LjMtMTkuNyA4LjEtMzguOSA1LjQtNTMuNC03LjhsLTEwNC42LTkzLjZjLTE0LjgtMTMuMi0xMi42LTM1LjggMi4xLTQ3LjhsNDgtNDQuMiAxMDQuOS05OS40YzIzLjMtMjIgNDcuMS0zNC41IDc1LjItMzQuNWg2NGM0MS41IDAgNzUgMzMuNSAxMTcgNzUuMlM1MTIgMjQwLjYgNTEyIDI4OC41VjQxNmMwIDYuMS0xLjcgMTItNC45IDE2LjNsLTMwLjggNzMuMi0xMy41IDMyYzI0LjYgMi43IDQ4LjYgNy45IDY3LjkgMTYuOWwtMzAuNSAxMzAuNmMtMjQuMyAxMDQuNS04NS44IDE1OC0xNDQuMyAxNzUuMmwtNTkuMiAxNy40Yy02LjUgMi0xMy4yIDIuOS0xOS45IDIuOWMtNi43IDAtMTMuNC0xLTIwLTNsLTY0LTE5LjJjLTQ2LjQtMTMuOS05MS4xLTQ3LjgtMTExLjYtOTUuNGwtMTYuNi0zNy42YzIzLjYgNy43IDUxLjMgMTIuMSAzNi41IDIuMkwzMiA2MDguNGMtMzkuOC05Mi42LTQ0LjMtMTc3LjItMTEuMy0yNTQuNGwxLjItMjYuNC0yOC02NS43Yy01LjEtMTIuMS0xLjctMjUuMyA4LjUtMzUuOWwxMDguNS0xMTAuMWM4MC45LTgyLjggMTg4LTg1LjggMjU0LjEtMjYuMmwxNi43IDE1LjZjLTQuNC03LjgtOC42LTE2LjQtMTIuNS0yNi41LTcuMS0xNy40LTExLjctMzYtMTMtNTQuOHYtNDAuMmMxLjMtMi4zIDMtNC41IDUuMS02LjVMNDQ2IDIwOWMuNy0uOCA3LjctNy4xIDcuNy04LjVzLS45LTMuMS0xLjYtMy45Yy0uOS0uOC0xLjktMS41LTMuMy0yLjdsLTYwLTU1Yy0yLjEtMS45LTQuNC0zLjUtNi45LTQuNmwtMTIuNS02LjRjLTIuMi0xLjEtNC41LTIuMS03LTMuMnMtNC44LTIuMi03LjQtMy40Yy01LTItMTAuMS00LTY2LjQtMjcuMkwyNDggMjI0aDEyMCYzMiAyNDhaIi8+PC9zdmc+" alt="Excel Files Icon">
+      <i class="fa-solid fa-file-excel"></i>
     </div>
     <div class="choose-files-wrapper">
       <label class="choose-files-button">
