@@ -38,6 +38,7 @@
       width: 90%;
       max-width: 600px;
       border: 2px dashed rgba(255, 255, 255, 0.6);
+      user-select: none;
     }
     .icon-container {
       margin-bottom: 30px;
@@ -114,6 +115,7 @@
       padding: 8px 15px;
       border-radius: 5px;
       cursor: pointer;
+      margin-left: 10px;
     }
     .convert-all-btn {
       display: block;
@@ -133,7 +135,7 @@
   <h1>Bulk Excel to XLSX Converter</h1>
   <h2>(Convert xls, xlsm, csv to xlsx for FREE!)</h2>
 
-  <div class="converter-container">
+  <div class="converter-container" id="converterContainer">
     <div class="icon-container">
       <i class="fa-solid fa-file-excel"></i>
     </div>
@@ -154,19 +156,48 @@
   <h3>Contact: decomplicate001@gmail.com</h3>
 
   <script>
-    const LOGGING_ENDPOINT = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec'; // Replace this
+    const LOGGING_ENDPOINT = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec'; // Replace if needed or remove logging
 
     const fileInput = document.getElementById('fileInput');
     const convertAllBtn = document.getElementById('convertAllBtn');
     const fileList = document.getElementById('fileList');
     const fileListContainer = document.getElementById('fileListContainer');
+    const converterContainer = document.getElementById('converterContainer');
 
     let files = [];
     let workbooks = {};
     let errors = {};
 
+    // Drag and drop support
+    converterContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      converterContainer.style.borderColor = '#10b981';
+    });
+    converterContainer.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      converterContainer.style.borderColor = 'rgba(255, 255, 255, 0.6)';
+    });
+    converterContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      converterContainer.style.borderColor = 'rgba(255, 255, 255, 0.6)';
+      if (e.dataTransfer.files.length) {
+        files = Array.from(e.dataTransfer.files).filter(f => /\.(xls|xlsx|xlsm|csv)$/i.test(f.name));
+        fileInput.files = e.dataTransfer.files; // update input files (may not always reflect depending on browser)
+        workbooks = {};
+        errors = {};
+        if (files.length > 0) {
+          fileListContainer.style.display = 'block';
+          parseAllFiles();
+        } else {
+          fileListContainer.style.display = 'none';
+        }
+        updateFileList();
+      }
+    });
+
     fileInput.addEventListener('change', () => {
       files = Array.from(fileInput.files);
+      files = files.filter(f => /\.(xls|xlsx|xlsm|csv)$/i.test(f.name)); // only accept supported extensions
       workbooks = {};
       errors = {};
       if (files.length > 0) {
@@ -212,7 +243,7 @@
           statusClass = 'error';
         }
 
-        li.classList.add(statusClass);
+        if (statusClass) li.classList.add(statusClass);
 
         const fileNameSpan = document.createElement('span');
         fileNameSpan.textContent = file.name;
@@ -282,7 +313,7 @@
       URL.revokeObjectURL(url);
       convertAllBtn.disabled = false;
 
-      // Log to Google Sheet
+      // Log to Google Sheet (optional)
       logToSheet({ action: 'bulk_convert', fileCount: convertedCount });
     });
 
@@ -301,15 +332,17 @@
     }
 
     function logToSheet(data) {
-      fetch(LOGGING_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: data.action,
-          userAgent: navigator.userAgent,
-          fileCount: data.fileCount
-        })
-      }).catch(err => console.error('Logging failed:', err));
+      if (!LOGGING_ENDPOINT.includes('YOUR_SCRIPT_ID_HERE')) {
+        fetch(LOGGING_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: data.action,
+            userAgent: navigator.userAgent,
+            fileCount: data.fileCount
+          })
+        }).catch(err => console.error('Logging failed:', err));
+      }
     }
   </script>
 </body>
