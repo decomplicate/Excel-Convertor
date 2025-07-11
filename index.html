@@ -178,7 +178,7 @@
 <body>
 
   <h1>Bulk Excel to XLSX Converter</h1>
-<h2>(Convert xls, xlsm, csv, xlsb to xlsx for FREE!!)</h2>
+  <h2>(Convert xls, xlsm, csv, xlsb to xlsx for FREE!!)</h2>
 
   <div class="converter-container">
     <div class="icon-container">
@@ -198,27 +198,30 @@
     <ul id="fileList"></ul>
     <button id="convertAllBtn" class="convert-all-btn" disabled>Convert All & Download ZIP</button>
   </div>
-<h3>For any feedback or queries contact at : decomplicate001@gmail.com</h3>
+
+  <h3>For any feedback or queries contact at : decomplicate001@gmail.com</h3>
 
 <script>
+  const LOGGING_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwzUmn-XqS3pa2rKas2Oa6fhGhyc9unLCKe8o7EeB0E_nrj5mITOw2tVjNnH7tpVE7Q/exec';
+
   const fileInput = document.getElementById('fileInput');
   const convertAllBtn = document.getElementById('convertAllBtn');
   const fileList = document.getElementById('fileList');
   const fileListContainer = document.getElementById('fileListContainer');
 
   let files = [];
-  let workbooks = {}; // To store the parsed Excel workbooks
-  let errors = {}; // To store errors during parsing
+  let workbooks = {};
+  let errors = {};
 
   fileInput.addEventListener('change', () => {
     files = Array.from(fileInput.files);
     workbooks = {};
     errors = {};
     if (files.length > 0) {
-      fileListContainer.style.display = 'block'; // Show the file list container
-      parseAllFiles(); // Automatically parse files when selected
+      fileListContainer.style.display = 'block';
+      parseAllFiles();
     } else {
-      fileListContainer.style.display = 'none'; // Hide if no files
+      fileListContainer.style.display = 'none';
     }
     updateFileList();
   });
@@ -242,22 +245,21 @@
 
   function updateFileList() {
     fileList.innerHTML = '';
-    // Enable "Convert All" button only if there are files and at least one has been successfully parsed
     convertAllBtn.disabled = files.length === 0 || Object.keys(workbooks).length === 0;
 
     files.forEach((file) => {
       const li = document.createElement('li');
       let statusText = 'Processing...';
-      let statusColor = '#64748b'; // Gray
+      let statusColor = '#64748b';
 
       if (workbooks[file.name]) {
         li.classList.add('ready');
         statusText = 'Ready';
-        statusColor = '#10b981'; // Green
+        statusColor = '#10b981';
       } else if (errors[file.name]) {
         li.classList.add('error');
         statusText = 'Error: ' + errors[file.name];
-        statusColor = '#ef4444'; // Red
+        statusColor = '#ef4444';
       }
 
       const fileNameSpan = document.createElement('span');
@@ -289,10 +291,9 @@
   }
 
   async function parseAllFiles() {
-    // Reset status for new parsing
     workbooks = {};
     errors = {};
-    updateFileList(); // Update to show "Processing..."
+    updateFileList();
 
     for (const file of files) {
       try {
@@ -301,7 +302,7 @@
       } catch (err) {
         errors[file.name] = err.message || 'Parsing failed';
       }
-      updateFileList(); // Update status for each file as it's processed
+      updateFileList();
     }
   }
 
@@ -310,16 +311,14 @@
 
     convertAllBtn.disabled = true;
 
-    // Ensure all files are parsed before attempting to zip
-    await parseAllFiles(); // Re-parse all to ensure latest status is reflected
+    await parseAllFiles();
 
     const zip = new JSZip();
     let convertedCount = 0;
 
     for (const [fileName, wb] of Object.entries(workbooks)) {
-      if (wb) { // Only add if parsing was successful
+      if (wb) {
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        // Ensure new file name ends with .xlsx
         let newFileName = fileName.replace(/\.(xls|xlsm|csv)$/i, '') + '.xlsx';
         zip.file(newFileName, wbout);
         convertedCount++;
@@ -337,11 +336,28 @@
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'converted_excels_to_xlsx.zip'; // Consistent ZIP name
+    a.download = 'converted_excels_to_xlsx.zip';
     a.click();
 
     URL.revokeObjectURL(url);
     convertAllBtn.disabled = false;
+
+    // Send log to Google Sheet
+    try {
+      fetch(LOGGING_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'bulk_convert',
+          userAgent: navigator.userAgent,
+          fileCount: Object.keys(workbooks).length,
+        }),
+      });
+    } catch (err) {
+      console.error('Logging to Google Sheet failed:', err);
+    }
   });
 
   function handleConvert(fileName) {
@@ -356,11 +372,25 @@
 
     const a = document.createElement('a');
     a.href = url;
-    // Ensure the downloaded file has a .xlsx extension
     a.download = fileName.replace(/\.(xls|xlsm|csv)$/i, '') + '.xlsx';
     a.click();
 
     URL.revokeObjectURL(url);
+
+    // Log individual file conversion
+    try {
+      fetch(LOGGING_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'convert_one',
+          userAgent: navigator.userAgent,
+          fileCount: 1,
+        }),
+      });
+    } catch (e) {
+      console.error("Logging failed", e);
+    }
   }
 </script>
 
