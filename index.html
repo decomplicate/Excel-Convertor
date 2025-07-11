@@ -1,184 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bulk Excel to XLSX Converter</title>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlzjgQ915xS2Z6gK+1eG5Fz3h7/K8zG5/h5/r1B4+E9Fz0/J1zW+Pz0/K3d5M0/Y9t+1q6Z7/X0C/92zW+Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bulk Excel to XLSX Converter</title>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" />
 
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0; /* Light gray background */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    margin: 0;
-  }
-  h1 {
-    color: #333;
-    font-size: 2.5em;
-    margin-bottom: 40px;
-    text-align: center;
-  }
-  .converter-container {
-    background-color: #28a745; /* Green background from image */
-    border-radius: 10px;
-    padding: 60px 80px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 600px; /* Fixed width for the container */
-    max-width: 90%; /* Ensure responsiveness */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    border: 2px dashed rgba(255, 255, 255, 0.6); /* Dashed white border from image */
-  }
-  .icon-container {
-    margin-bottom: 30px;
-  }
-  /* Updated for Font Awesome icon */
-  .icon-container .fa-file-excel {
-    font-size: 100px; /* Adjust size as needed */
-    color: white; /* Make the icon white */
-  }
-  .choose-files-wrapper {
-    position: relative;
-    display: inline-block;
-    background-color: white; /* White background for the button */
-    border-radius: 5px;
-    overflow: hidden; /* To contain the dropdown arrow */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  }
-  .choose-files-button {
-    display: flex;
-    align-items: center;
-    padding: 15px 30px;
-    font-size: 1.1em;
-    color: #333;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    outline: none;
-  }
-  .choose-files-button .plus-icon {
-    font-size: 1.5em;
-    margin-right: 10px;
-    color: #333;
-  }
-  .choose-files-button .arrow-icon {
-    font-size: 1.2em;
-    margin-left: 20px;
-    color: #333;
-  }
-  input[type="file"] {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-  }
-  .drop-text {
-    color: white;
-    margin-top: 20px;
-    font-size: 1.1em;
-  }
-
-  /* Styling for the file list and conversion process (hidden by default) */
-  .file-list-container {
-    background: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 40px; /* Space between converter and list */
-    width: 600px;
-    max-width: 90%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  }
-  ul {
-    list-style: none;
-    padding-left: 0;
-    max-height: 300px;
-    overflow-y: auto;
-    margin-top: 20px;
-  }
-  li {
-    background: #f9f9f9;
-    margin-bottom: 10px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.95em;
-  }
-  li.ready {
-    border-color: #10b981;
-    background: #e6ffe6; /* Lighter green for ready */
-  }
-  li.error {
-    border-color: #ef4444;
-    background: #ffe6e6; /* Lighter red for error */
-  }
-  li span.status {
-    font-weight: 600;
-  }
-  li button.convert-btn {
-    background: #28a745; /* Green convert button */
-    border: none;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: background-color 0.3s ease;
-  }
-  li button.convert-btn:hover {
-    background: #218838; /* Darker green on hover */
-  }
-  .convert-all-btn {
-    display: block;
-    margin: 20px auto 0 auto;
-    padding: 12px 25px;
-    font-size: 1.1em;
-    background: #007bff; /* Blue for 'Convert All' */
-    border: none;
-    border-radius: 6px;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3);
-    transition: background-color 0.3s ease;
-  }
-  .convert-all-btn:disabled {
-    background: #cccccc;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  .convert-all-btn:hover:not(:disabled) {
-    background: #0056b3;
-  }
-  /* Scrollbar styling for file list */
-  ul::-webkit-scrollbar {
-    width: 8px;
-  }
-  ul::-webkit-scrollbar-thumb {
-    background-color: #94a3b8;
-    border-radius: 4px;
-  }
-</style>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    h2 {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .converter-container {
+      background-color: #28a745;
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 600px;
+      border: 2px dashed rgba(255, 255, 255, 0.6);
+    }
+    .icon-container {
+      margin-bottom: 30px;
+    }
+    .icon-container .fa-file-excel {
+      font-size: 100px;
+      color: white;
+    }
+    .choose-files-wrapper {
+      position: relative;
+      background-color: white;
+      border-radius: 5px;
+      overflow: hidden;
+      display: inline-block;
+    }
+    .choose-files-button {
+      display: flex;
+      align-items: center;
+      padding: 15px 30px;
+      font-size: 1.1em;
+      color: #333;
+      cursor: pointer;
+    }
+    input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .drop-text {
+      color: white;
+      margin-top: 20px;
+    }
+    .file-list-container {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 30px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    li {
+      background: #f9f9f9;
+      margin-bottom: 10px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    li.ready {
+      border-color: #10b981;
+      background: #e6ffe6;
+    }
+    li.error {
+      border-color: #ef4444;
+      background: #ffe6e6;
+    }
+    .convert-btn {
+      background: #28a745;
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .convert-all-btn {
+      display: block;
+      margin: 20px auto 0 auto;
+      padding: 12px 25px;
+      font-size: 1.1em;
+      background: #007bff;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
   <h1>Bulk Excel to XLSX Converter</h1>
-  <h2>(Convert xls, xlsm, csv, xlsb to xlsx for FREE!!)</h2>
+  <h2>(Convert xls, xlsm, csv to xlsx for FREE!)</h2>
 
   <div class="converter-container">
     <div class="icon-container">
@@ -186,12 +139,11 @@
     </div>
     <div class="choose-files-wrapper">
       <label class="choose-files-button">
-        <span class="plus-icon">+</span>
-        CHOOSE FILES
-        <span class="arrow-icon">&#9660;</span> <input type="file" id="fileInput" multiple accept=".xls,.xlsx,.xlsm,.csv" />
+        <span>+</span> CHOOSE FILES
+        <input type="file" id="fileInput" multiple accept=".xls,.xlsx,.xlsm,.csv" />
       </label>
     </div>
-    <div class="drop-text">or drop files here</div>
+    <div class="drop-text">or drag files here</div>
   </div>
 
   <div class="file-list-container" id="fileListContainer" style="display: none;">
@@ -199,200 +151,166 @@
     <button id="convertAllBtn" class="convert-all-btn" disabled>Convert All & Download ZIP</button>
   </div>
 
-  <h3>For any feedback or queries contact at : decomplicate001@gmail.com</h3>
+  <h3>Contact: decomplicate001@gmail.com</h3>
 
-<script>
-  const LOGGING_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwzUmn-XqS3pa2rKas2Oa6fhGhyc9unLCKe8o7EeB0E_nrj5mITOw2tVjNnH7tpVE7Q/exec';
+  <script>
+    const LOGGING_ENDPOINT = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec'; // Replace this
 
-  const fileInput = document.getElementById('fileInput');
-  const convertAllBtn = document.getElementById('convertAllBtn');
-  const fileList = document.getElementById('fileList');
-  const fileListContainer = document.getElementById('fileListContainer');
+    const fileInput = document.getElementById('fileInput');
+    const convertAllBtn = document.getElementById('convertAllBtn');
+    const fileList = document.getElementById('fileList');
+    const fileListContainer = document.getElementById('fileListContainer');
 
-  let files = [];
-  let workbooks = {};
-  let errors = {};
+    let files = [];
+    let workbooks = {};
+    let errors = {};
 
-  fileInput.addEventListener('change', () => {
-    files = Array.from(fileInput.files);
-    workbooks = {};
-    errors = {};
-    if (files.length > 0) {
-      fileListContainer.style.display = 'block';
-      parseAllFiles();
-    } else {
-      fileListContainer.style.display = 'none';
-    }
-    updateFileList();
-  });
-
-  async function parseFile(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const data = new Uint8Array(evt.target.result);
-          const wb = XLSX.read(data, { type: 'array' });
-          resolve(wb);
-        } catch (err) {
-          reject(err);
-        }
-      };
-      reader.onerror = () => reject(new Error('File reading error'));
-      reader.readAsArrayBuffer(file);
-    });
-  }
-
-  function updateFileList() {
-    fileList.innerHTML = '';
-    convertAllBtn.disabled = files.length === 0 || Object.keys(workbooks).length === 0;
-
-    files.forEach((file) => {
-      const li = document.createElement('li');
-      let statusText = 'Processing...';
-      let statusColor = '#64748b';
-
-      if (workbooks[file.name]) {
-        li.classList.add('ready');
-        statusText = 'Ready';
-        statusColor = '#10b981';
-      } else if (errors[file.name]) {
-        li.classList.add('error');
-        statusText = 'Error: ' + errors[file.name];
-        statusColor = '#ef4444';
-      }
-
-      const fileNameSpan = document.createElement('span');
-      fileNameSpan.textContent = file.name;
-      li.appendChild(fileNameSpan);
-
-      const rightSide = document.createElement('div');
-      rightSide.style.display = 'flex';
-      rightSide.style.alignItems = 'center';
-      rightSide.style.gap = '0.75rem';
-
-      const statusSpan = document.createElement('span');
-      statusSpan.className = 'status';
-      statusSpan.textContent = statusText;
-      statusSpan.style.color = statusColor;
-      rightSide.appendChild(statusSpan);
-
-      if (workbooks[file.name]) {
-        const btn = document.createElement('button');
-        btn.textContent = 'Download XLSX';
-        btn.className = 'convert-btn';
-        btn.onclick = () => handleConvert(file.name);
-        rightSide.appendChild(btn);
-      }
-
-      li.appendChild(rightSide);
-      fileList.appendChild(li);
-    });
-  }
-
-  async function parseAllFiles() {
-    workbooks = {};
-    errors = {};
-    updateFileList();
-
-    for (const file of files) {
-      try {
-        const wb = await parseFile(file);
-        workbooks[file.name] = wb;
-      } catch (err) {
-        errors[file.name] = err.message || 'Parsing failed';
+    fileInput.addEventListener('change', () => {
+      files = Array.from(fileInput.files);
+      workbooks = {};
+      errors = {};
+      if (files.length > 0) {
+        fileListContainer.style.display = 'block';
+        parseAllFiles();
+      } else {
+        fileListContainer.style.display = 'none';
       }
       updateFileList();
+    });
+
+    async function parseFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const data = new Uint8Array(evt.target.result);
+            const wb = XLSX.read(data, { type: 'array' });
+            resolve(wb);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error('File reading error'));
+        reader.readAsArrayBuffer(file);
+      });
     }
-  }
 
-  convertAllBtn.addEventListener('click', async () => {
-    if (files.length === 0) return;
+    function updateFileList() {
+      fileList.innerHTML = '';
+      convertAllBtn.disabled = files.length === 0 || Object.keys(workbooks).length === 0;
 
-    convertAllBtn.disabled = true;
+      files.forEach((file) => {
+        const li = document.createElement('li');
+        let statusText = 'Processing...';
+        let statusClass = '';
 
-    await parseAllFiles();
+        if (workbooks[file.name]) {
+          statusText = 'Ready';
+          statusClass = 'ready';
+        } else if (errors[file.name]) {
+          statusText = 'Error: ' + errors[file.name];
+          statusClass = 'error';
+        }
 
-    const zip = new JSZip();
-    let convertedCount = 0;
+        li.classList.add(statusClass);
 
-    for (const [fileName, wb] of Object.entries(workbooks)) {
-      if (wb) {
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        let newFileName = fileName.replace(/\.(xls|xlsm|csv)$/i, '') + '.xlsx';
-        zip.file(newFileName, wbout);
-        convertedCount++;
+        const fileNameSpan = document.createElement('span');
+        fileNameSpan.textContent = file.name;
+
+        const statusSpan = document.createElement('span');
+        statusSpan.textContent = statusText;
+
+        const convertBtn = document.createElement('button');
+        convertBtn.textContent = 'Download XLSX';
+        convertBtn.className = 'convert-btn';
+        convertBtn.onclick = () => handleConvert(file.name);
+
+        li.appendChild(fileNameSpan);
+        li.appendChild(statusSpan);
+        if (statusClass === 'ready') li.appendChild(convertBtn);
+
+        fileList.appendChild(li);
+      });
+    }
+
+    async function parseAllFiles() {
+      workbooks = {};
+      errors = {};
+      updateFileList();
+
+      for (const file of files) {
+        try {
+          const wb = await parseFile(file);
+          workbooks[file.name] = wb;
+        } catch (err) {
+          errors[file.name] = err.message || 'Parsing failed';
+        }
+        updateFileList();
       }
     }
 
-    if (convertedCount === 0) {
-      alert('No Excel files were successfully converted to XLSX.');
+    convertAllBtn.addEventListener('click', async () => {
+      if (files.length === 0) return;
+
+      convertAllBtn.disabled = true;
+      await parseAllFiles();
+
+      const zip = new JSZip();
+      let convertedCount = 0;
+
+      for (const [fileName, wb] of Object.entries(workbooks)) {
+        if (wb) {
+          const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+          let newFileName = fileName.replace(/\.(xls|xlsm|csv)$/i, '') + '.xlsx';
+          zip.file(newFileName, wbout);
+          convertedCount++;
+        }
+      }
+
+      if (convertedCount === 0) {
+        alert('No files converted.');
+        convertAllBtn.disabled = false;
+        return;
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'converted_files.zip';
+      a.click();
+      URL.revokeObjectURL(url);
       convertAllBtn.disabled = false;
-      return;
+
+      // Log to Google Sheet
+      logToSheet({ action: 'bulk_convert', fileCount: convertedCount });
+    });
+
+    function handleConvert(fileName) {
+      const wb = workbooks[fileName];
+      if (!wb) return alert('Parsing not complete.');
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName.replace(/\.(xls|xlsm|csv)$/i, '') + '.xlsx';
+      a.click();
+      URL.revokeObjectURL(url);
+      logToSheet({ action: 'convert_one', fileCount: 1 });
     }
 
-    const content = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(content);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'converted_excels_to_xlsx.zip';
-    a.click();
-
-    URL.revokeObjectURL(url);
-    convertAllBtn.disabled = false;
-
-    // Send log to Google Sheet
-    try {
-      fetch(LOGGING_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'bulk_convert',
-          userAgent: navigator.userAgent,
-          fileCount: Object.keys(workbooks).length,
-        }),
-      });
-    } catch (err) {
-      console.error('Logging to Google Sheet failed:', err);
-    }
-  });
-
-  function handleConvert(fileName) {
-    const wb = workbooks[fileName];
-    if (!wb) {
-      alert('This file has not been successfully parsed yet!');
-      return;
-    }
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([wbout], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName.replace(/\.(xls|xlsm|csv)$/i, '') + '.xlsx';
-    a.click();
-
-    URL.revokeObjectURL(url);
-
-    // Log individual file conversion
-    try {
+    function logToSheet(data) {
       fetch(LOGGING_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'convert_one',
+          action: data.action,
           userAgent: navigator.userAgent,
-          fileCount: 1,
-        }),
-      });
-    } catch (e) {
-      console.error("Logging failed", e);
+          fileCount: data.fileCount
+        })
+      }).catch(err => console.error('Logging failed:', err));
     }
-  }
-</script>
-
+  </script>
 </body>
 </html>
